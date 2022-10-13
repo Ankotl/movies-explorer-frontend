@@ -1,14 +1,13 @@
-import React from "react";
 import SearchForm from "../SearchForm/SearchForm";
 import MoviesCardList from "../MoviesCardList/MoviesCardList";
 
-const Movies = ({ movies }) => {
+const SavedMovies = ({ movies}) => {
   return (
     <main className="movies">
       <SearchForm />
-      <MoviesCardList movies={movies} isButtonMore/>
+      <MoviesCardList movies={movies} />
     </main>
-  );
-};
+  )
+}
 
-export default Movies;
+export default SavedMovies

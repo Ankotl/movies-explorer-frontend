@@ -2,10 +2,9 @@
     background-color: #fff;
     min-height: 100vh;
     min-width: 320px;
-    width: 100%;
     display: flex;
-    align-items: center;
     flex-direction: column;
+    margin: 0 auto;
     position: relative;
     font-family: "Inter", Arial, sans-serif;    
     overflow: hidden;
@@ -15,4 +14,5 @@
     -ms-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    box-sizing: border-box;
   }
