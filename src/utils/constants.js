@@ -1,4 +1,4 @@
-const BASE_URL = "http://api.akotlyakov.kino.nomoredomains.club";
+const BASE_URL = "https://api.akotlyakov.kino.nomorepartiesxyz.ru";
 const MOVIES_URL = "https://api.nomoreparties.co/beatfilm-movies";
 const SHORT_MOVIES_DURATION = 40;
 const DEVICE_PARAMS = {
