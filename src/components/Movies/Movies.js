@@ -107,10 +107,10 @@ export default function Movies({
       } else {
         setFilteredMovies(movies);
       }
+    } else {
+      handleSearchSubmit("");
     }
   }, [currentUser]);
-
-
 
   return (
     <main className="movies">
