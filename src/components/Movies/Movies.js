@@ -110,9 +110,7 @@ export default function Movies({
     }
   }, [currentUser]);
 
-  useEffect(() => {
-    handleSearchSubmit("");
-  }, []);
+
 
   return (
     <main className="movies">
