@@ -3,45 +3,45 @@ import { useState, useContext, useEffect } from "react";
 import SearchForm from "../SearchForm/SearchForm";
 import MoviesCardList from "../MoviesCardList/MoviesCardList";
 import CurrentUserContext from "../../context/CurrentUserContext";
-import { filterMovies, filterShortMovies } from "../../utils/utils";
+import { getShortMovies, filterMovies } from "../../utils/utils";
 import "./SavedMovies.css";
 
-const SavedMovies = ({ onDeleteClick, savedMoviesList, setIsInfoTooltip }) => {
+const SavedMovies = ({ onDeleteClick, savedMoviesList, setTooltipConfig }) => {
   const currentUser = useContext(CurrentUserContext);
 
-  const [shortMovies, setShortMovies] = useState(false);
-  const [NotFound, setNotFound] = useState(false);
+  const [isShortMovies, setIsShortMovies] = useState(false);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [showedMovies, setShowedMovies] = useState(savedMoviesList);
   const [filteredMovies, setFilteredMovies] = useState(showedMovies);
 
   function handleSearchSubmit(inputValue) {
-    const moviesList = filterMovies(savedMoviesList, inputValue, shortMovies);
+    const moviesList = filterMovies(savedMoviesList, inputValue, isShortMovies);
     if (moviesList.length === 0) {
-      setNotFound(true);
-      setIsInfoTooltip({
+      setIsNotFound(true);
+      setTooltipConfig({
         isOpen: true,
         successful: false,
         text: "Ничего не найдено.",
       });
     } else {
-      setNotFound(false);
+      setIsNotFound(false);
       setFilteredMovies(moviesList);
       setShowedMovies(moviesList);
     }
   }
 
   function handleShortFilms() {
-    if (!shortMovies) {
-      setShortMovies(true);
+    if (!isShortMovies) {
+      setIsShortMovies(true);
       localStorage.setItem(`${currentUser.email} - shortSavedMovies`, true);
-      setShowedMovies(filterShortMovies(filteredMovies));
-      filterShortMovies(filteredMovies).length === 0
-        ? setNotFound(true)
-        : setNotFound(false);
+      setShowedMovies(getShortMovies(filteredMovies));
+      getShortMovies(filteredMovies).length === 0
+        ? setIsNotFound(true)
+        : setIsNotFound(false);
     } else {
-      setShortMovies(false);
+      setIsShortMovies(false);
       localStorage.setItem(`${currentUser.email} - shortSavedMovies`, false);
-      filteredMovies.length === 0 ? setNotFound(true) : setNotFound(false);
+      filteredMovies.length === 0 ? setIsNotFound(true) : setIsNotFound(false);
       setShowedMovies(filteredMovies);
     }
   }
@@ -50,17 +50,17 @@ const SavedMovies = ({ onDeleteClick, savedMoviesList, setIsInfoTooltip }) => {
     if (
       localStorage.getItem(`${currentUser.email} - shortSavedMovies`) === "true"
     ) {
-      setShortMovies(true);
-      setShowedMovies(filterShortMovies(savedMoviesList));
+      setIsShortMovies(true);
+      setShowedMovies(getShortMovies(savedMoviesList));
     } else {
-      setShortMovies(false);
+      setIsShortMovies(false);
       setShowedMovies(savedMoviesList);
     }
   }, [savedMoviesList, currentUser]);
 
   useEffect(() => {
     setFilteredMovies(savedMoviesList);
-    savedMoviesList.length !== 0 ? setNotFound(false) : setNotFound(true);
+    savedMoviesList.length !== 0 ? setIsNotFound(false) : setIsNotFound(true);
   }, [savedMoviesList]);
 
   return (
@@ -68,11 +68,11 @@ const SavedMovies = ({ onDeleteClick, savedMoviesList, setIsInfoTooltip }) => {
       <SearchForm
         handleSearchSubmit={handleSearchSubmit}
         handleShortFilms={handleShortFilms}
-        shortMovies={shortMovies}
+        shortMovies={isShortMovies}
       />
-      {!NotFound && (
+      {!isNotFound && (
         <MoviesCardList
-          filteredMovies={showedMovies}
+          moviesList={showedMovies}
           savedMoviesList={savedMoviesList}
           onDeleteClick={onDeleteClick}
         />

@@ -1,9 +1,9 @@
 import "./Movies.css";
 import { useState, useContext, useEffect } from "react";
 import {
-  transformMovies,
+  addFieldsMovies,
   filterMovies,
-  filterShortMovies,
+  getShortMovies,
 } from "../../utils/utils";
 import moviesApi from "../../utils/MoviesApi";
 import SearchForm from "../SearchForm/SearchForm";
@@ -12,35 +12,34 @@ import CurrentUserContext from "../../context/CurrentUserContext";
 
 export default function Movies({
   setIsLoader,
-  setInfoTooltip,
+  setTooltipConfig,
   savedMoviesList,
   onLikeClick,
   onDeleteClick,
 }) {
   const currentUser = useContext(CurrentUserContext);
 
-  const [shortMovies, setShortMovies] = useState(false);
+  const [isShortMovies, setIsShortMovies] = useState(false);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [initialMovies, setInitialMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
-  const [NotFound, setNotFound] = useState(false);
+
   const [isAllMovies, setIsAllMovies] = useState([]);
 
-  function handleSetFilteredMovies(movies, userQuery, shortMoviesCheckbox) {
-    const moviesList = filterMovies(movies, userQuery, shortMoviesCheckbox);
+  function handleSetFilteredMovies(movies, userQuery, isShortMovies) {
+    const moviesList = filterMovies(movies, userQuery, isShortMovies);
     if (moviesList.length === 0) {
-      setInfoTooltip({
+      setTooltipConfig({
         isOpen: true,
         successful: false,
         text: "Ничего не найдено.",
       });
-      setNotFound(true);
+      setIsNotFound(true);
     } else {
-      setNotFound(false);
+      setIsNotFound(false);
     }
     setInitialMovies(moviesList);
-    setFilteredMovies(
-      shortMoviesCheckbox ? filterShortMovies(moviesList) : moviesList
-    );
+    setFilteredMovies(isShortMovies ? getShortMovies(moviesList) : moviesList);
     localStorage.setItem(
       `${currentUser.email} - movies`,
       JSON.stringify(moviesList)
@@ -49,7 +48,7 @@ export default function Movies({
 
   function handleSearchSubmit(inputValue) {
     localStorage.setItem(`${currentUser.email} - movieSearch`, inputValue);
-    localStorage.setItem(`${currentUser.email} - shortMovies`, shortMovies);
+    localStorage.setItem(`${currentUser.email} - shortMovies`, isShortMovies);
 
     if (isAllMovies.length === 0) {
       setIsLoader(true);
@@ -58,39 +57,43 @@ export default function Movies({
         .then((movies) => {
           setIsAllMovies(movies);
           handleSetFilteredMovies(
-            transformMovies(movies),
+            addFieldsMovies(movies),
             inputValue,
-            shortMovies
+            isShortMovies
           );
         })
         .catch(() =>
-          setInfoTooltip({
+          setTooltipConfig({
             isOpen: true,
             successful: false,
-            text: "Во время запроса произошла ошибка. Возможно, проблема с соединением или сервер недоступен. Подождите немного и попробуйте ещё раз.",
+            text: "Во время запроса произошла ошибка. Подождите немного и попробуйте ещё раз.",
           })
         )
         .finally(() => setIsLoader(false));
     } else {
-      handleSetFilteredMovies(isAllMovies, inputValue, shortMovies);
+      handleSetFilteredMovies(
+        addFieldsMovies(isAllMovies),
+        inputValue,
+        isShortMovies
+      );
     }
   }
 
   function handleShortFilms() {
-    setShortMovies(!shortMovies);
-    if (!shortMovies) {
-      setFilteredMovies(filterShortMovies(initialMovies));
+    setIsShortMovies(!isShortMovies);
+    if (!isShortMovies) {
+      setFilteredMovies(getShortMovies(initialMovies));
     } else {
       setFilteredMovies(initialMovies);
     }
-    localStorage.setItem(`${currentUser.email} - shortMovies`, !shortMovies);
+    localStorage.setItem(`${currentUser.email} - shortMovies`, !isShortMovies);
   }
 
   useEffect(() => {
     if (localStorage.getItem(`${currentUser.email} - shortMovies`) === "true") {
-      setShortMovies(true);
+      setIsShortMovies(true);
     } else {
-      setShortMovies(false);
+      setIsShortMovies(false);
     }
   }, [currentUser]);
 
@@ -103,7 +106,7 @@ export default function Movies({
       if (
         localStorage.getItem(`${currentUser.email} - shortMovies`) === "true"
       ) {
-        setFilteredMovies(filterShortMovies(movies));
+        setFilteredMovies(getShortMovies(movies));
       } else {
         setFilteredMovies(movies);
       }
@@ -117,11 +120,11 @@ export default function Movies({
       <SearchForm
         handleSearchSubmit={handleSearchSubmit}
         handleShortFilms={handleShortFilms}
-        shortMovies={shortMovies}
+        shortMovies={isShortMovies}
       />
-      {!NotFound && (
+      {!isNotFound && (
         <MoviesCardList
-          filteredMovies={filteredMovies}
+          moviesList={filteredMovies}
           savedMoviesList={savedMoviesList}
           onLikeClick={onLikeClick}
           onDeleteClick={onDeleteClick}

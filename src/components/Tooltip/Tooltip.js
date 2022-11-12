@@ -1,7 +1,7 @@
-import "./InfoTooltip.css";
+import "./Tooltip.css";
 import { useEffect } from "react";
 
-export default function InfoTooltip({
+export default function Tooltip({
   onClose,
   status: { isOpen, successful, text },
 }) {

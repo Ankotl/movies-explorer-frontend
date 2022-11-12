@@ -16,7 +16,7 @@ import Register from "../Register/Register";
 import Profile from "../Profile/Profile";
 import NotFound from "../NotFound/NotFound";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
-import InfoTooltip from "../InfoTooltip/InfoTooltip";
+import Tooltip from "../Tooltip/Tooltip";
 import Preloader from "../Preloader/Preloader";
 import "./App.css";
 
@@ -28,7 +28,7 @@ const App = () => {
   const history = useHistory();
   const location = useLocation();
   const [isLoader, setIsLoader] = useState(false);
-  const [infoTooltip, setInfoTooltip] = useState({
+  const [tooltipConfig, setTooltipConfig] = useState({
     isOpen: false,
     successful: true,
     text: "",
@@ -37,11 +37,11 @@ const App = () => {
   const [currentUser, setCurrentUser] = useState({});
   const [moviesList, setMoviesList] = useState([]);
 
-  const headerEndpoints = ["/movies", "/saved-movies", "/profile", "/"];
-  const footerEndpoints = ["/movies", "/saved-movies", "/"];
+  const headerVisibleLocation = ["/movies", "/saved-movies", "/profile", "/"];
+  const footerVisibleLocation = ["/movies", "/saved-movies", "/"];
 
-  function closeInfoTooltip() {
-    setInfoTooltip({ ...infoTooltip, isOpen: false });
+  function handleCloseTooltip() {
+    setTooltipConfig({ ...tooltipConfig, isOpen: false });
   }
 
   function handleRegister({ name, email, password }) {
@@ -54,7 +54,7 @@ const App = () => {
         }
       })
       .catch((err) =>
-        setInfoTooltip({
+        setTooltipConfig({
           isOpen: true,
           successful: false,
           text: err,
@@ -72,7 +72,7 @@ const App = () => {
           localStorage.setItem("jwt", jwt.token);
           setLoggedIn(true);
           history.push("/movies");
-          setInfoTooltip({
+          setTooltipConfig({
             isOpen: true,
             successful: true,
             text: "Добро пожаловать!",
@@ -80,7 +80,7 @@ const App = () => {
         }
       })
       .catch((err) =>
-        setInfoTooltip({
+        setTooltipConfig({
           isOpen: true,
           successful: false,
           text: err,
@@ -102,14 +102,14 @@ const App = () => {
       .updateUser(name, email)
       .then((newUserData) => {
         setCurrentUser(newUserData);
-        setInfoTooltip({
+        setTooltipConfig({
           isOpen: true,
           successful: true,
           text: "Ваши данные обновлены!",
         });
       })
       .catch((err) =>
-        setInfoTooltip({
+        setTooltipConfig({
           isOpen: true,
           successful: false,
           text: err,
@@ -123,7 +123,7 @@ const App = () => {
       .addNewMovie(movie)
       .then((newMovie) => setMoviesList([newMovie, ...moviesList]))
       .catch((err) =>
-        setInfoTooltip({
+        setTooltipConfig({
           isOpen: true,
           successful: false,
           text: err,
@@ -148,7 +148,7 @@ const App = () => {
         setMoviesList(newMoviesList);
       })
       .catch((err) =>
-        setInfoTooltip({
+        setTooltipConfig({
           isOpen: true,
           successful: false,
           text: err,
@@ -171,7 +171,7 @@ const App = () => {
           }
         })
         .catch((err) =>
-          setInfoTooltip({
+          setTooltipConfig({
             isOpen: true,
             successful: false,
             text: err,
@@ -181,6 +181,7 @@ const App = () => {
           setIsLoader(false);
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -190,7 +191,7 @@ const App = () => {
         .getUserInfo()
         .then((res) => setCurrentUser(res))
         .catch((err) =>
-          setInfoTooltip({
+          setTooltipConfig({
             isOpen: true,
             successful: false,
             text: err,
@@ -205,13 +206,13 @@ const App = () => {
       mainApi
         .getSavedMovies()
         .then((data) => {
-          const UserMoviesList = data.filter(
+          const movies = data.filter(
             (m) => m.owner === currentUser._id
           );
-          setMoviesList(UserMoviesList);
+          setMoviesList(movies);
         })
         .catch((err) =>
-          setInfoTooltip({
+          setTooltipConfig({
             isOpen: true,
             successful: false,
             text: err,
@@ -223,7 +224,7 @@ const App = () => {
   return (
     <div className="app">
       <CurrentUserContext.Provider value={currentUser}>
-        <Route exact path={headerEndpoints}>
+        <Route exact path={headerVisibleLocation}>
           <Header authorized={loggedIn} />
         </Route>
         <Switch>
@@ -232,7 +233,7 @@ const App = () => {
             component={Movies}
             loggedIn={loggedIn}
             setIsLoader={setIsLoader}
-            setInfoTooltip={setInfoTooltip}
+            setTooltipConfig={setTooltipConfig}
             savedMoviesList={moviesList}
             onLikeClick={handleSaveMovie}
             onDeleteClick={handleDeleteMovie}
@@ -243,7 +244,7 @@ const App = () => {
             loggedIn={loggedIn}
             savedMoviesList={moviesList}
             onDeleteClick={handleDeleteMovie}
-            setInfoTooltip={setInfoTooltip}
+            setTooltipConfig={setTooltipConfig}
           />
           <Route exact path="/signup">
             {!loggedIn ? (
@@ -273,11 +274,11 @@ const App = () => {
             <NotFound />
           </Route>
         </Switch>
-        <Route exact path={footerEndpoints}>
+        <Route exact path={footerVisibleLocation}>
           <Footer />
         </Route>
         {isLoader && <Preloader />}
-        <InfoTooltip status={infoTooltip} onClose={closeInfoTooltip} />
+        <Tooltip status={tooltipConfig} onClose={handleCloseTooltip} />
       </CurrentUserContext.Provider>
     </div>
   );

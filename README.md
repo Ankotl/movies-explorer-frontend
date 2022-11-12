@@ -8,4 +8,4 @@
 Домен по которому доступно приложение  https://akotlyakov.kino.nomoredomains.club/
 
 
-Ссылка на пул реквест https://github.com/Ankotl/movies-explorer-frontend/pull/2
+Ссылка на пул реквест https://github.com/Ankotl/movies-explorer-frontend/pull/4

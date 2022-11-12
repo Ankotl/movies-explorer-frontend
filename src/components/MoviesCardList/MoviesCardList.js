@@ -2,60 +2,81 @@ import "./MoviesCardList.css";
 import React, { useState, useEffect } from "react";
 import MoviesCard from "../MoviesCard/MoviesCard";
 import { useLocation } from "react-router-dom";
-import useScreenWidth from "../../hooks/useScreenWidth";
-import { DEVICE_PARAMS } from "../../utils/constants.js";
-import { getSavedMovieCard } from "../../utils/utils.js";
+import useWindowSize from "../../hooks/useWindowSize";
+import { ENUM_CARDLIST, ENUM_SCREEN_WIDTH } from "../../utils/constants.js";
+
+function getIsSavedMovie(arr, movie) {
+  return arr.find((item) => {
+    return item.movieId === (movie.id || movie.movieId);
+  });
+}
 
 const MoviesCardList = ({
-  filteredMovies,
+  moviesList,
   savedMoviesList,
   onLikeClick,
   onDeleteClick,
 }) => {
-  const screenWidth = useScreenWidth();
+  const { width: screenWidth } = useWindowSize();
 
-  const { desktop, tablet, mobile } = DEVICE_PARAMS;
+  const { desktopWidth, mobileWidth } = ENUM_SCREEN_WIDTH;
+  const { desktopCards, tabletCards, mobileCards } = ENUM_CARDLIST;
   const [isMount, setIsMount] = useState(true);
   const [showMovieList, setShowMovieList] = useState([]);
-  const [cardsShowDetails, setCardsShowDetails] = useState({
-    total: 12,
-    more: 3,
+  const [displayConfigList, setDisplayConfigList] = useState({
+    cards: 12,
+    amountAdd: 3,
   });
 
   const location = useLocation();
+  const isAllMoviesList = location.pathname === "/movies";
 
   useEffect(() => {
-    if (location.pathname === "/movies") {
-      if (screenWidth > desktop.width) {
-        setCardsShowDetails(desktop.cards);
-      } else if (screenWidth <= desktop.width && screenWidth > mobile.width) {
-        setCardsShowDetails(tablet.cards);
+    if (isAllMoviesList) {
+      if (screenWidth > desktopWidth) {
+        setDisplayConfigList(desktopCards);
+      } else if (screenWidth <= desktopWidth && screenWidth > mobileWidth) {
+        setDisplayConfigList(tabletCards);
       } else {
-        setCardsShowDetails(mobile.cards);
+        setDisplayConfigList(mobileCards);
       }
       return () => setIsMount(false);
     }
-  }, [screenWidth, isMount, desktop, tablet, mobile, location.pathname]);
+  }, [
+    desktopWidth,
+    desktopCards,
+    isAllMoviesList,
+    mobileWidth,
+    isMount,
+    mobileCards,
+    screenWidth,
+    tabletCards,
+  ]);
 
   useEffect(() => {
-    if (filteredMovies.length) {
-      const res = filteredMovies.filter(
-        (item, i) => i < cardsShowDetails.total
+    if (moviesList.length) {
+      const res = moviesList.filter(
+        (item, i) => i < displayConfigList.cards
       );
       setShowMovieList(res);
     }
-  }, [filteredMovies, cardsShowDetails.total]);
+  }, [moviesList, displayConfigList.cards]);
 
   function handleClickMoreMovies() {
     const start = showMovieList.length;
-    const end = start + cardsShowDetails.more;
-    const additional = filteredMovies.length - start;
+    const end = start + displayConfigList.amountAdd;
+    const additional = moviesList.length - start;
 
     if (additional > 0) {
-      const newCards = filteredMovies.slice(start, end);
+      const newCards = moviesList.slice(start, end);
       setShowMovieList([...showMovieList, ...newCards]);
     }
   }
+
+  const isVisibleMoreButton =
+    isAllMoviesList &&
+    showMovieList.length >= 5 &&
+    showMovieList.length < moviesList.length;
 
   return (
     <section className="cards">
@@ -63,7 +84,7 @@ const MoviesCardList = ({
         {showMovieList.map((movie) => (
           <MoviesCard
             key={movie.id || movie._id}
-            saved={getSavedMovieCard(savedMoviesList, movie)}
+            saved={getIsSavedMovie(savedMoviesList, movie)}
             onLikeClick={onLikeClick}
             onDeleteClick={onDeleteClick}
             movie={movie}
@@ -71,20 +92,18 @@ const MoviesCardList = ({
         ))}
       </ul>
 
-      {location.pathname === "/movies" &&
-        showMovieList.length >= 5 &&
-        showMovieList.length < filteredMovies.length && (
-          <div className="cards__button-container">
-            <button
-              className="cards__button"
-              type="button"
-              name="more"
-              onClick={handleClickMoreMovies}
-            >
-              Ещё
-            </button>
-          </div>
-        )}
+      {isVisibleMoreButton && (
+        <div className="cards__button-container">
+          <button
+            className="cards__button"
+            type="button"
+            name="more"
+            onClick={handleClickMoreMovies}
+          >
+            Ещё
+          </button>
+        </div>
+      )}
     </section>
   );
 };
