@@ -26,8 +26,8 @@ export default function Movies({
 
   const [isAllMovies, setIsAllMovies] = useState([]);
 
-  function handleSetFilteredMovies(movies, userQuery, isShortMovies) {
-    const moviesList = filterMovies(movies, userQuery, isShortMovies);
+  function handleSetFilteredMovies(movies, query, isShortMovies) {
+    const moviesList = filterMovies(movies, query, isShortMovies);
     if (moviesList.length === 0) {
       setTooltipConfig({
         isOpen: true,
@@ -48,7 +48,7 @@ export default function Movies({
 
   function handleSearchSubmit(inputValue) {
     localStorage.setItem(`${currentUser.email} - movieSearch`, inputValue);
-    localStorage.setItem(`${currentUser.email} - shortMovies`, isShortMovies);
+    localStorage.setItem(`${currentUser.email} - isShortMovies`, isShortMovies);
 
     if (isAllMovies.length === 0) {
       setIsLoader(true);
@@ -86,11 +86,16 @@ export default function Movies({
     } else {
       setFilteredMovies(initialMovies);
     }
-    localStorage.setItem(`${currentUser.email} - shortMovies`, !isShortMovies);
+    localStorage.setItem(
+      `${currentUser.email} - isShortMovies`,
+      !isShortMovies
+    );
   }
 
   useEffect(() => {
-    if (localStorage.getItem(`${currentUser.email} - shortMovies`) === "true") {
+    if (
+      localStorage.getItem(`${currentUser.email} - isShortMovies`) === "true"
+    ) {
       setIsShortMovies(true);
     } else {
       setIsShortMovies(false);
@@ -104,7 +109,7 @@ export default function Movies({
       );
       setInitialMovies(movies);
       if (
-        localStorage.getItem(`${currentUser.email} - shortMovies`) === "true"
+        localStorage.getItem(`${currentUser.email} - isShortMovies`) === "true"
       ) {
         setFilteredMovies(getShortMovies(movies));
       } else {

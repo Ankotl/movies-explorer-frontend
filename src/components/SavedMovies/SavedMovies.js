@@ -14,8 +14,8 @@ const SavedMovies = ({ onDeleteClick, savedMoviesList, setTooltipConfig }) => {
   const [showedMovies, setShowedMovies] = useState(savedMoviesList);
   const [filteredMovies, setFilteredMovies] = useState(showedMovies);
 
-  function handleSearchSubmit(inputValue) {
-    const moviesList = filterMovies(savedMoviesList, inputValue, isShortMovies);
+  function handleSearchSubmit(query) {
+    const moviesList = filterMovies(savedMoviesList, query, isShortMovies);
     if (moviesList.length === 0) {
       setIsNotFound(true);
       setTooltipConfig({
@@ -33,14 +33,14 @@ const SavedMovies = ({ onDeleteClick, savedMoviesList, setTooltipConfig }) => {
   function handleShortFilms() {
     if (!isShortMovies) {
       setIsShortMovies(true);
-      localStorage.setItem(`${currentUser.email} - shortSavedMovies`, true);
+      localStorage.setItem(`${currentUser.email} - isShortSavedMovies`, true);
       setShowedMovies(getShortMovies(filteredMovies));
       getShortMovies(filteredMovies).length === 0
         ? setIsNotFound(true)
         : setIsNotFound(false);
     } else {
       setIsShortMovies(false);
-      localStorage.setItem(`${currentUser.email} - shortSavedMovies`, false);
+      localStorage.setItem(`${currentUser.email} - isShortSavedMovies`, false);
       filteredMovies.length === 0 ? setIsNotFound(true) : setIsNotFound(false);
       setShowedMovies(filteredMovies);
     }
@@ -48,7 +48,7 @@ const SavedMovies = ({ onDeleteClick, savedMoviesList, setTooltipConfig }) => {
 
   useEffect(() => {
     if (
-      localStorage.getItem(`${currentUser.email} - shortSavedMovies`) === "true"
+      localStorage.getItem(`${currentUser.email} - isShortSavedMovies`) === "true"
     ) {
       setIsShortMovies(true);
       setShowedMovies(getShortMovies(savedMoviesList));

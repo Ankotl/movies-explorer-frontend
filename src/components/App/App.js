@@ -96,12 +96,12 @@ const App = () => {
     history.push("/");
   }
 
-  function handleProfile({ name, email }) {
+  function handleEditProfile({ name, email }) {
     setIsLoader(true);
     mainApi
       .updateUser(name, email)
-      .then((newUserData) => {
-        setCurrentUser(newUserData);
+      .then((newUser) => {
+        setCurrentUser(newUser);
         setTooltipConfig({
           isOpen: true,
           successful: true,
@@ -118,7 +118,7 @@ const App = () => {
       .finally(() => setIsLoader(false));
   }
 
-  function handleSaveMovie(movie) {
+  function handleLikeMovie(movie) {
     mainApi
       .addNewMovie(movie)
       .then((newMovie) => setMoviesList([newMovie, ...moviesList]))
@@ -206,9 +206,7 @@ const App = () => {
       mainApi
         .getSavedMovies()
         .then((data) => {
-          const movies = data.filter(
-            (m) => m.owner === currentUser._id
-          );
+          const movies = data.filter((m) => m.owner === currentUser._id);
           setMoviesList(movies);
         })
         .catch((err) =>
@@ -235,7 +233,7 @@ const App = () => {
             setIsLoader={setIsLoader}
             setTooltipConfig={setTooltipConfig}
             savedMoviesList={moviesList}
-            onLikeClick={handleSaveMovie}
+            onLikeClick={handleLikeMovie}
             onDeleteClick={handleDeleteMovie}
           />
           <ProtectedRoute
@@ -264,7 +262,7 @@ const App = () => {
             path="/profile"
             component={Profile}
             loggedIn={loggedIn}
-            handleProfile={handleProfile}
+            handleEditProfile={handleEditProfile}
             handleSignOut={handleSignOut}
           />
           <Route path="/" exact>
