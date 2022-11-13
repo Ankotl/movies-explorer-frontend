@@ -39,6 +39,7 @@
   height: 44px;
   outline: none;
   border: none;
+  cursor: pointer;
 }
 
 .search__error {

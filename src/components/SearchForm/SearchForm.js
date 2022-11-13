@@ -1,4 +1,4 @@
-import {  useEffect, useContext } from "react";
+import { useEffect, useContext } from "react";
 import { useLocation } from "react-router-dom";
 import FilterCheckbox from "../FilterCheckbox/FilterCheckbox";
 import "./SearchForm.css";
@@ -16,14 +16,11 @@ const SearchForm = ({ handleSearchSubmit, handleShortFilms, shortMovies }) => {
   }
 
   useEffect(() => {
-    if (
-      location.pathname === "/movies" &&
-      localStorage.getItem(`${currentUser.email} - movieSearch`)
-    ) {
-      const searchValue = localStorage.getItem(
-        `${currentUser.email} - movieSearch`
-      );
-      values.search = searchValue;
+    const moviesSearchStorage = localStorage.getItem(
+      `${currentUser.email} - movieSearch`
+    );
+    if (location.pathname === "/movies" && moviesSearchStorage) {
+      values.search = moviesSearchStorage;
     }
   }, [currentUser]);
 

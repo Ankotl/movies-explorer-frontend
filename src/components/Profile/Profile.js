@@ -2,10 +2,10 @@ import "./Profile.css";
 import { useState, useContext } from "react";
 import CurrentUserContext from "../../context/CurrentUserContext";
 
-const Profile = ({ handleSignOut, handleProfile }) => {
+const Profile = ({ handleSignOut, handleEditProfile }) => {
   const currentUser = useContext(CurrentUserContext);
   const [name, setName] = useState(currentUser.name);
-  const [lastName, setLastName] = useState(currentUser.name);
+  const [currentName, setCurrentName] = useState(currentUser.name);
   const [email, setEmail] = useState(currentUser.email);
   const [lastEmail, setLastEmail] = useState(currentUser.email);
   const [isVisibleButton, setVisibleButton] = useState(false);
@@ -14,7 +14,7 @@ const Profile = ({ handleSignOut, handleProfile }) => {
     const value = evt.target.value;
     setName(value);
 
-    if (value !== lastName) {
+    if (value !== currentName) {
       setVisibleButton(true);
     } else {
       setVisibleButton(false);
@@ -34,9 +34,9 @@ const Profile = ({ handleSignOut, handleProfile }) => {
 
   function handleSubmit(evt) {
     evt.preventDefault();
-    handleProfile({ name, email });
+    handleEditProfile({ name, email });
     setVisibleButton(false);
-    setLastName(name);
+    setCurrentName(name);
     setLastEmail(email);
   }
 
