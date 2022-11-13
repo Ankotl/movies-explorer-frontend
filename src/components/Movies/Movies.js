@@ -11,7 +11,7 @@ import MoviesCardList from "../MoviesCardList/MoviesCardList";
 import CurrentUserContext from "../../context/CurrentUserContext";
 
 export default function Movies({
-  setIsLoader,
+  setIsLoading,
   setTooltipConfig,
   savedMoviesList,
   onLikeClick,
@@ -51,7 +51,7 @@ export default function Movies({
     localStorage.setItem(`${currentUser.email} - isShortMovies`, isShortMovies);
 
     if (isAllMovies.length === 0) {
-      setIsLoader(true);
+      setIsLoading(true);
       moviesApi
         .getMovies()
         .then((movies) => {
@@ -69,7 +69,7 @@ export default function Movies({
             text: "Во время запроса произошла ошибка. Подождите немного и попробуйте ещё раз.",
           })
         )
-        .finally(() => setIsLoader(false));
+        .finally(() => setIsLoading(false));
     } else {
       handleSetFilteredMovies(
         addFieldsMovies(isAllMovies),
@@ -103,18 +103,15 @@ export default function Movies({
   }, [currentUser]);
 
   useEffect(() => {
-    if (localStorage.getItem(`${currentUser.email} - movies`)) {
-      const movies = JSON.parse(
-        localStorage.getItem(`${currentUser.email} - movies`)
-      );
+    const moviesStorage = localStorage.getItem(`${currentUser.email} - movies`);
+    if (moviesStorage) {
+      const movies = JSON.parse(moviesStorage);
       setInitialMovies(movies);
-      if (
+      const movieList =
         localStorage.getItem(`${currentUser.email} - isShortMovies`) === "true"
-      ) {
-        setFilteredMovies(getShortMovies(movies));
-      } else {
-        setFilteredMovies(movies);
-      }
+          ? getShortMovies(movies)
+          : movies;
+      setFilteredMovies(movieList);
     } else {
       handleSearchSubmit("");
     }

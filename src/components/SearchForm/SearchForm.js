@@ -16,14 +16,11 @@ const SearchForm = ({ handleSearchSubmit, handleShortFilms, shortMovies }) => {
   }
 
   useEffect(() => {
-    if (
-      location.pathname === "/movies" &&
-      localStorage.getItem(`${currentUser.email} - movieSearch`)
-    ) {
-      const searchValue = localStorage.getItem(
-        `${currentUser.email} - movieSearch`
-      );
-      values.search = searchValue;
+    const moviesSearchStorage = localStorage.getItem(
+      `${currentUser.email} - movieSearch`
+    );
+    if (location.pathname === "/movies" && moviesSearchStorage) {
+      values.search = moviesSearchStorage;
     }
   }, [currentUser]);
 
