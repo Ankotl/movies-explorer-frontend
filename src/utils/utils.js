@@ -1,67 +1,41 @@
-import { SHORT_MOVIES_DURATION } from "./constants.js";
+import { BACKEND_MOVIES_URL, DEFAULT_URL_IMAGE } from "./constants";
 
-function transformMovies(movies) {
-  movies.forEach((movie) => {
-    if (!movie.image) {
-      movie.image =
-        "https://images.unsplash.com/photo-1478720568477-152d9b164e26?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjB8fGZpbG18ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60";
-      movie.thumbnail =
-        "https://images.unsplash.com/photo-1478720568477-152d9b164e26?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjB8fGZpbG18ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60";
-    } else {
-      movie.thumbnail = `https://api.nomoreparties.co${movie.image.formats.thumbnail.url}`;
-      movie.image = `https://api.nomoreparties.co${movie.image.url}`;
-    }
-    if (!movie.country) {
-      movie.country = "Russia";
-    }
-    if (!movie.nameEN) {
-      movie.nameEN = movie.nameRU;
-    }
-  });
-  return movies;
+function addFieldsMovies(movies) {
+  return movies.map(
+    ({ image, thumbnail, country, nameEN, nameRU, ...movie }) => ({
+      ...movie,
+      image: !image
+        ? DEFAULT_URL_IMAGE
+        : `${BACKEND_MOVIES_URL}${image.formats.thumbnail.url}`,
+      thumbnail: !image
+        ? DEFAULT_URL_IMAGE
+        : `${BACKEND_MOVIES_URL}${image.url}`,
+      country: !country ? "Earth" : country,
+      nameEN: !nameEN ? nameRU : nameEN,
+      nameRU: nameRU,
+    })
+  );
 }
 
-function filterShortMovies(movies) {
-  return movies.filter((movie) => movie.duration < SHORT_MOVIES_DURATION);
+function getShortMovies(movies) {
+  return movies.filter((movie) => movie.duration < 40);
 }
 
-function filterMovies(movies, userQuery, shortMoviesCheckbox) {
-  const moviesByUserQuery = movies.filter((movie) => {
-    const movieRu = String(movie.nameRU).toLowerCase().trim();
-    const movieEn = String(movie.nameEN).toLowerCase().trim();
-    const userMovie = userQuery.toLowerCase().trim();
+function filterMovies(movies, query, isShortMovies) {
+  const moviesFiltered = movies.filter(({ nameEN, nameRU }) => {
+    const movieRu = nameRU.toLowerCase().trim();
+    const movieEn = nameEN.toLowerCase().trim();
+    const userInput = query.toLowerCase().trim();
     return (
-      movieRu.indexOf(userMovie) !== -1 || movieEn.indexOf(userMovie) !== -1
+      movieRu.indexOf(userInput) !== -1 || movieEn.indexOf(userInput) !== -1
     );
   });
 
-  if (shortMoviesCheckbox) {
-    return filterShortMovies(moviesByUserQuery);
+  if (isShortMovies) {
+    return getShortMovies(moviesFiltered);
   } else {
-    return moviesByUserQuery;
+    return moviesFiltered;
   }
 }
 
-function transformDuration(duration) {
-  const hours = Math.trunc(duration / 60);
-  const minutes = duration % 60;
-  if (hours === 0) {
-    return `${minutes}м`;
-  } else {
-    return `${hours}ч ${minutes}м`;
-  }
-}
-
-function getSavedMovieCard(arr, movie) {
-  return arr.find((item) => {
-    return item.movieId === (movie.id || movie.movieId);
-  });
-}
-
-export {
-  transformMovies,
-  filterMovies,
-  filterShortMovies,
-  transformDuration,
-  getSavedMovieCard,
-};
+export { addFieldsMovies, filterMovies, getShortMovies };

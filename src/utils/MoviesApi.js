@@ -1,25 +1,32 @@
-import { MOVIES_URL } from "./constants";
+import { BACKEND_MOVIES_URL } from "./constants";
 
 class MoviesApi {
-  constructor({ baseUrl }) {
+  constructor({ baseUrl, headers }) {
     this._baseUrl = baseUrl;
+    this._headers = headers;
   }
 
-  async _requestResult(res) {
-    const result = await res.json();
-    return res.ok ? result : Promise.reject(res);
+  _checkResponse(res) {
+    if (res.ok) {
+      return res.json();
+    } else {
+      return Promise.reject(res);
+    }
   }
 
   getMovies() {
     return fetch(`${this._baseUrl}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
-    }).then((res) => this._requestResult(res));
+      headers: this._headers,
+    }).then((res) => this._checkResponse(res));
   }
 }
 
 const moviesApi = new MoviesApi({
-  baseUrl: MOVIES_URL,
+  baseUrl: `${BACKEND_MOVIES_URL}/beatfilm-movies`,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 export default moviesApi;

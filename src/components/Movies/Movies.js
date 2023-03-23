@@ -1,9 +1,9 @@
 import "./Movies.css";
 import { useState, useContext, useEffect } from "react";
 import {
-  transformMovies,
+  addFieldsMovies,
   filterMovies,
-  filterShortMovies,
+  getShortMovies,
 } from "../../utils/utils";
 import moviesApi from "../../utils/MoviesApi";
 import SearchForm from "../SearchForm/SearchForm";
@@ -11,36 +11,35 @@ import MoviesCardList from "../MoviesCardList/MoviesCardList";
 import CurrentUserContext from "../../context/CurrentUserContext";
 
 export default function Movies({
-  setIsLoader,
-  setInfoTooltip,
+  setIsLoading,
+  setTooltipConfig,
   savedMoviesList,
   onLikeClick,
   onDeleteClick,
 }) {
   const currentUser = useContext(CurrentUserContext);
 
-  const [shortMovies, setShortMovies] = useState(false);
+  const [isShortMovies, setIsShortMovies] = useState(false);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [initialMovies, setInitialMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
-  const [NotFound, setNotFound] = useState(false);
+
   const [isAllMovies, setIsAllMovies] = useState([]);
 
-  function handleSetFilteredMovies(movies, userQuery, shortMoviesCheckbox) {
-    const moviesList = filterMovies(movies, userQuery, shortMoviesCheckbox);
+  function handleSetFilteredMovies(movies, query, isShortMovies) {
+    const moviesList = filterMovies(movies, query, isShortMovies);
     if (moviesList.length === 0) {
-      setInfoTooltip({
+      setTooltipConfig({
         isOpen: true,
         successful: false,
         text: "Ничего не найдено.",
       });
-      setNotFound(true);
+      setIsNotFound(true);
     } else {
-      setNotFound(false);
+      setIsNotFound(false);
     }
     setInitialMovies(moviesList);
-    setFilteredMovies(
-      shortMoviesCheckbox ? filterShortMovies(moviesList) : moviesList
-    );
+    setFilteredMovies(isShortMovies ? getShortMovies(moviesList) : moviesList);
     localStorage.setItem(
       `${currentUser.email} - movies`,
       JSON.stringify(moviesList)
@@ -49,64 +48,70 @@ export default function Movies({
 
   function handleSearchSubmit(inputValue) {
     localStorage.setItem(`${currentUser.email} - movieSearch`, inputValue);
-    localStorage.setItem(`${currentUser.email} - shortMovies`, shortMovies);
+    localStorage.setItem(`${currentUser.email} - isShortMovies`, isShortMovies);
 
     if (isAllMovies.length === 0) {
-      setIsLoader(true);
+      setIsLoading(true);
       moviesApi
         .getMovies()
         .then((movies) => {
           setIsAllMovies(movies);
           handleSetFilteredMovies(
-            transformMovies(movies),
+            addFieldsMovies(movies),
             inputValue,
-            shortMovies
+            isShortMovies
           );
         })
         .catch(() =>
-          setInfoTooltip({
+          setTooltipConfig({
             isOpen: true,
             successful: false,
-            text: "Во время запроса произошла ошибка. Возможно, проблема с соединением или сервер недоступен. Подождите немного и попробуйте ещё раз.",
+            text: "Во время запроса произошла ошибка. Подождите немного и попробуйте ещё раз.",
           })
         )
-        .finally(() => setIsLoader(false));
+        .finally(() => setIsLoading(false));
     } else {
-      handleSetFilteredMovies(isAllMovies, inputValue, shortMovies);
+      handleSetFilteredMovies(
+        addFieldsMovies(isAllMovies),
+        inputValue,
+        isShortMovies
+      );
     }
   }
 
   function handleShortFilms() {
-    setShortMovies(!shortMovies);
-    if (!shortMovies) {
-      setFilteredMovies(filterShortMovies(initialMovies));
+    setIsShortMovies(!isShortMovies);
+    if (!isShortMovies) {
+      setFilteredMovies(getShortMovies(initialMovies));
     } else {
       setFilteredMovies(initialMovies);
     }
-    localStorage.setItem(`${currentUser.email} - shortMovies`, !shortMovies);
+    localStorage.setItem(
+      `${currentUser.email} - isShortMovies`,
+      !isShortMovies
+    );
   }
 
   useEffect(() => {
-    if (localStorage.getItem(`${currentUser.email} - shortMovies`) === "true") {
-      setShortMovies(true);
+    if (
+      localStorage.getItem(`${currentUser.email} - isShortMovies`) === "true"
+    ) {
+      setIsShortMovies(true);
     } else {
-      setShortMovies(false);
+      setIsShortMovies(false);
     }
   }, [currentUser]);
 
   useEffect(() => {
-    if (localStorage.getItem(`${currentUser.email} - movies`)) {
-      const movies = JSON.parse(
-        localStorage.getItem(`${currentUser.email} - movies`)
-      );
+    const moviesStorage = localStorage.getItem(`${currentUser.email} - movies`);
+    if (moviesStorage) {
+      const movies = JSON.parse(moviesStorage);
       setInitialMovies(movies);
-      if (
-        localStorage.getItem(`${currentUser.email} - shortMovies`) === "true"
-      ) {
-        setFilteredMovies(filterShortMovies(movies));
-      } else {
-        setFilteredMovies(movies);
-      }
+      const movieList =
+        localStorage.getItem(`${currentUser.email} - isShortMovies`) === "true"
+          ? getShortMovies(movies)
+          : movies;
+      setFilteredMovies(movieList);
     } else {
       handleSearchSubmit("");
     }
@@ -117,11 +122,11 @@ export default function Movies({
       <SearchForm
         handleSearchSubmit={handleSearchSubmit}
         handleShortFilms={handleShortFilms}
-        shortMovies={shortMovies}
+        shortMovies={isShortMovies}
       />
-      {!NotFound && (
+      {!isNotFound && (
         <MoviesCardList
-          filteredMovies={filteredMovies}
+          moviesList={filteredMovies}
           savedMoviesList={savedMoviesList}
           onLikeClick={onLikeClick}
           onDeleteClick={onDeleteClick}

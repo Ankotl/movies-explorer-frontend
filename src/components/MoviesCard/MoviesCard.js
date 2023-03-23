@@ -1,7 +1,13 @@
 import "./MoviesCard.css";
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { transformDuration } from "../../utils/utils.js";
+
+const getTime = (time) => {
+  const h = Math.floor(time / 60);
+  const m = Math.floor(time % 60);
+
+  return `${h ? `${h}h ` : ""}${m ? `${m}m ` : ""}`;
+};
 
 const MoviesCard = ({ movie, saved, onLikeClick, onDeleteClick }) => {
   const location = useLocation();
@@ -53,7 +59,7 @@ const MoviesCard = ({ movie, saved, onLikeClick, onDeleteClick }) => {
           )}
         </div>
       </div>
-      <p className="card__duration">{transformDuration(movie.duration)}</p>
+      <p className="card__duration">{getTime(movie.duration)}</p>
     </li>
   );
 };
